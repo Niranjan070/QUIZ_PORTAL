@@ -423,7 +423,7 @@ MIT License - For educational purposes.
 
 <div align="center">
   
-**Built with ❤️ by BCA Final Year Team**
+**Built with ❤️ **
 
 ⭐ Star this repository if you found it helpful!
 
