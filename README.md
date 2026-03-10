@@ -8,6 +8,15 @@ A comprehensive web-based quiz management system with role-based dashboards for 
 ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
 
+### 🌐 Live Demo
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | [https://quiz-portal-ufnk.onrender.com](https://quiz-portal-ufnk.onrender.com) |
+| **Backend API** | [https://quiz-portal-api-cltf.onrender.com](https://quiz-portal-api-cltf.onrender.com) |
+
+> **Note:** Free tier services may take ~50 seconds to wake up on first request after inactivity.
+
 ---
 
 ## 📋 Table of Contents
@@ -19,9 +28,10 @@ A comprehensive web-based quiz management system with role-based dashboards for 
 5. [Complete Installation Guide](#-complete-installation-guide-for-beginners)
 6. [Running the Application](#-running-the-application)
 7. [Demo Credentials](#-demo-credentials)
-8. [Project Structure](#-project-structure)
-9. [Troubleshooting](#-troubleshooting)
-10. [Team Details](#-team-details)
+8. [Deployment](#-deployment)
+9. [Project Structure](#-project-structure)
+10. [Troubleshooting](#-troubleshooting)
+11. [Team Details](#-team-details)
 
 ---
 
@@ -100,8 +110,8 @@ Follow these steps carefully. Each step must be completed before moving to the n
 
 **Option A: Using Git (Recommended)**
 ```bash
-git clone https://github.com/YOUR_USERNAME/ONLINE_QUIZ_PORTAL.git
-cd ONLINE_QUIZ_PORTAL
+git clone https://github.com/Niranjan070/QUIZ_PORTAL.git
+cd QUIZ_PORTAL
 ```
 
 **Option B: Download ZIP**
@@ -259,7 +269,21 @@ You can also register new accounts through the Sign Up page.
 
 ---
 
-## 📁 Project Structure
+## � Deployment
+
+This project is deployed using free-tier cloud services:
+
+| Component | Platform | Details |
+|-----------|----------|----------|
+| **Frontend** | [Render](https://render.com) (Static Site) | React + Vite build served as static files |
+| **Backend** | [Render](https://render.com) (Web Service) | Node.js + Express API |
+| **Database** | [Aiven](https://aiven.io) (Free MySQL) | MySQL 8.0, 1GB storage, Singapore region |
+
+For the complete step-by-step deployment guide, see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
+---
+
+## �📁 Project Structure
 
 ```
 ONLINE_QUIZ_PORTAL/
@@ -289,8 +313,10 @@ ONLINE_QUIZ_PORTAL/
 │   └── .env.example           # Example env file
 │
 ├── database/
-│   └── schema.sql             # MySQL database schema
+│   ├── schema.sql             # MySQL database schema (local)
+│   └── deploy_schema.sql      # Deployment-ready schema (cloud)
 │
+├── DEPLOYMENT.md              # Deployment guide
 └── README.md                  # This file!
 ```
 
@@ -402,7 +428,7 @@ npm install
 | Varshana | Developer |
 
 **Course**: Final Year BCA  
-**Project Duration**: Dec 2025 – Mar 2025 (4 Months)
+**Project Duration**: Dec 2025 – Mar 2026 (4 Months)
 
 ---
 
