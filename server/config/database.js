@@ -1,8 +1,8 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Create connection pool for better performance
-const pool = mysql.createPool({
+// Build pool config
+const poolConfig = {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || 'root',
@@ -13,7 +13,15 @@ const pool = mysql.createPool({
     queueLimit: 0,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0
-});
+};
+
+// Enable SSL for cloud databases (Aiven, etc.)
+if (process.env.DB_SSL === 'true') {
+    poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+// Create connection pool for better performance
+const pool = mysql.createPool(poolConfig);
 
 // Test database connection
 const testConnection = async () => {
