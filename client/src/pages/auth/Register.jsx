@@ -31,6 +31,11 @@ const Register = () => {
             return;
         }
 
+        if (!email.toLowerCase().endsWith('@vcw.ac.in')) {
+            toast.error('Please use your college email ID (@vcw.ac.in)');
+            return;
+        }
+
         if (password !== confirmPassword) {
             toast.error('Passwords do not match');
             return;
@@ -60,72 +65,81 @@ const Register = () => {
             <div className="auth-container">
                 <div className="auth-left">
                     <div className="auth-brand">
-                        <GraduationCap size={48} />
-                        <h1>QuizPortal</h1>
+                        <GraduationCap size={42} />
+                        <span>QuizPortal</span>
                     </div>
-                    <h2>Join Our Learning Community</h2>
+                    <h2>Join Our <br />Learning Community</h2>
                     <p>Create an account to start taking quizzes, track your progress,
                         and enhance your learning experience.</p>
 
                     <div className="auth-features">
                         <div className="feature-item">
-                            <div className="feature-icon">🎓</div>
+                            <div className="feature-icon">
+                                <GraduationCap size={18} />
+                            </div>
                             <span>Access Multiple Courses</span>
                         </div>
                         <div className="feature-item">
-                            <div className="feature-icon">🏆</div>
-                            <span>Earn Certificates</span>
+                            <div className="feature-icon">
+                                <User size={18} />
+                            </div>
+                            <span>Personalized Profile</span>
                         </div>
                         <div className="feature-item">
-                            <div className="feature-icon">📈</div>
+                            <div className="feature-icon">
+                                <Eye size={18} />
+                            </div>
                             <span>Track Your Progress</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="auth-right">
-                    <div className="auth-form-container">
-                        <div className="auth-header">
-                            <h3>Create Account</h3>
-                            <p>Fill in your details to get started</p>
+                    <div className="auth-header">
+                        <h3>Create Account</h3>
+                        <p>Fill in your details to get started</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="input-group">
+                            <label>Full Name</label>
+                            <div className="input-wrapper">
+                                <User size={20} className="input-icon" />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    className="form-input"
+                                    placeholder="Enter your full name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="auth-form">
-                            <div className="form-group">
-                                <label className="form-label">Full Name</label>
-                                <div className="input-wrapper">
-                                    <User size={20} className="input-icon" />
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        className="form-input"
-                                        placeholder="Enter your full name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                    />
-                                </div>
+                        <div className="input-group">
+                            <label>Email Address</label>
+                            <div className="input-wrapper">
+                                <Mail size={20} className="input-icon" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    className="form-input"
+                                    placeholder="your@vcw.ac.in"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
                             </div>
+                        </div>
 
-                            <div className="form-group">
-                                <label className="form-label">Email Address</label>
-                                <div className="input-wrapper">
-                                    <Mail size={20} className="input-icon" />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        className="form-input"
-                                        placeholder="Enter your email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label className="form-label">Role</label>
+                        <div className="input-group">
+                            <label>Role</label>
+                            <div className="input-wrapper">
+                                <GraduationCap size={20} className="input-icon" />
                                 <select
                                     name="role"
-                                    className="form-select"
+                                    className="form-input"
                                     value={formData.role}
                                     onChange={handleChange}
                                 >
@@ -133,52 +147,59 @@ const Register = () => {
                                     <option value="faculty">Faculty</option>
                                 </select>
                             </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label">Password</label>
-                                    <div className="input-wrapper">
-                                        <Lock size={20} className="input-icon" />
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            name="password"
-                                            className="form-input"
-                                            placeholder="Create password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Confirm Password</label>
-                                    <div className="input-wrapper">
-                                        <Lock size={20} className="input-icon" />
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            name="confirmPassword"
-                                            className="form-input"
-                                            placeholder="Confirm password"
-                                            value={formData.confirmPassword}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <label className="checkbox-label">
-                                <input type="checkbox" onChange={() => setShowPassword(!showPassword)} />
-                                <span>Show passwords</span>
-                            </label>
-
-                            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-                                {loading ? <span className="spinner" style={{ width: 20, height: 20 }}></span> : 'Create Account'}
-                            </button>
-                        </form>
-
-                        <div className="auth-footer">
-                            <p>Already have an account? <Link to="/login">Sign In</Link></p>
                         </div>
+
+                        <div className="input-group">
+                            <label>Password</label>
+                            <div className="input-wrapper">
+                                <Lock size={20} className="input-icon" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    className="form-input"
+                                    placeholder="Create password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="input-group">
+                            <label>Confirm Password</label>
+                            <div className="input-wrapper">
+                                <Lock size={20} className="input-icon" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="confirmPassword"
+                                    className="form-input"
+                                    placeholder="Confirm password"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn-block"
+                            disabled={loading}
+                        >
+                            {loading ? 'Creating Account...' : 'Create Account'}
+                        </button>
+                    </form>
+
+                    <div className="auth-footer">
+                        Already have an account?
+                        <Link to="/login" className="auth-link">Sign In</Link>
                     </div>
                 </div>
             </div>

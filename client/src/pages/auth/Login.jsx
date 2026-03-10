@@ -41,88 +41,91 @@ const Login = () => {
             <div className="auth-container">
                 <div className="auth-left">
                     <div className="auth-brand">
-                        <GraduationCap size={48} />
-                        <h1>QuizPortal</h1>
+                        <GraduationCap size={42} />
+                        <span>QuizPortal</span>
                     </div>
-                    <h2>Welcome to the Future of Learning</h2>
-                    <p>Experience seamless online assessments with our modern quiz platform.
-                        Create, manage, and take quizzes with ease.</p>
+                    <h2>Unlock Your <br />Learning Potential</h2>
+                    <p>Experience the next generation of online assessments.
+                        Interactive, secure, and designed for success.</p>
 
                     <div className="auth-features">
                         <div className="feature-item">
-                            <div className="feature-icon">📝</div>
-                            <span>Create Interactive Quizzes</span>
+                            <div className="feature-icon">
+                                <GraduationCap size={18} />
+                            </div>
+                            <span>Smart Assessment Engine</span>
                         </div>
                         <div className="feature-item">
-                            <div className="feature-icon">📊</div>
-                            <span>Track Performance Analytics</span>
+                            <div className="feature-icon">
+                                <Mail size={18} />
+                            </div>
+                            <span>Instant Feedback System</span>
                         </div>
                         <div className="feature-item">
-                            <div className="feature-icon">⏱️</div>
-                            <span>Timed Assessments</span>
+                            <div className="feature-icon">
+                                <Lock size={18} />
+                            </div>
+                            <span>Secure & Reliable Platform</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="auth-right">
-                    <div className="auth-form-container">
-                        <div className="auth-header">
-                            <h3>Sign In</h3>
-                            <p>Enter your credentials to access your account</p>
-                        </div>
+                    <div className="auth-header">
+                        <h3>Welcome Back</h3>
+                        <p>Sign in to continue your journey</p>
+                    </div>
 
-                        <form onSubmit={handleSubmit} className="auth-form">
-                            <div className="form-group">
-                                <label className="form-label">Email Address</label>
-                                <div className="input-wrapper">
-                                    <Mail size={20} className="input-icon" />
-                                    <input
-                                        type="email"
-                                        className="form-input"
-                                        placeholder="Enter your email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                    />
-                                </div>
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="input-group">
+                            <label>Email Address</label>
+                            <div className="input-wrapper">
+                                <Mail size={20} className="input-icon" />
+                                <input
+                                    type="email"
+                                    className="form-input"
+                                    placeholder="your@email.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
                             </div>
+                        </div>
 
-                            <div className="form-group">
-                                <label className="form-label">Password</label>
-                                <div className="input-wrapper">
-                                    <Lock size={20} className="input-icon" />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        className="form-input"
-                                        placeholder="Enter your password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="password-toggle"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
+                        <div className="input-group">
+                            <label>Password</label>
+                            <div className="input-wrapper">
+                                <Lock size={20} className="input-icon" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="form-input"
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
-
-                            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-                                {loading ? <span className="spinner" style={{ width: 20, height: 20 }}></span> : 'Sign In'}
-                            </button>
-                        </form>
-
-                        <div className="auth-footer">
-                            <p>Don't have an account? <Link to="/register">Sign Up</Link></p>
                         </div>
 
-                        <div className="demo-credentials">
-                            <p><strong>Demo Accounts:</strong></p>
-                            <small>Admin: admin@quizportal.com</small><br />
-                            <small>Faculty: john.smith@college.edu</small><br />
-                            <small>Student: nikitha@student.edu</small><br />
-                            <small>Password: password123</small>
-                        </div>
+                        <button
+                            type="submit"
+                            className="btn-block"
+                            disabled={loading}
+                        >
+                            {loading ? 'Signing in...' : 'Sign In'}
+                        </button>
+                    </form>
+
+                    <div className="auth-footer">
+                        Don't have an account?
+                        <Link to="/register" className="auth-link">Create Account</Link>
                     </div>
                 </div>
             </div>

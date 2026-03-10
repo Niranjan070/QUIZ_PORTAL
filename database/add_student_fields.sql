@@ -1,0 +1,7 @@
+USE online_quiz_portal;
+
+ALTER TABLE users 
+ADD COLUMN funding_type VARCHAR(50) DEFAULT NULL,
+ADD COLUMN level VARCHAR(10) DEFAULT NULL,
+ADD COLUMN department VARCHAR(255) DEFAULT NULL;
+ss

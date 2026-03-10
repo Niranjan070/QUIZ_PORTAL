@@ -1,0 +1,137 @@
+/* 🌈 Theme Toggle Button - Rainbow */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+    border: 2px solid rgba(41, 121, 255, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(41, 121, 255, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(41, 121, 255, 0.08) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(236, 72, 153, 0.06) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(41, 121, 255, 0.2), 0 4px 12px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.35);
+}
+
+.theme-toggle-btn:hover::before {
+    opacity: 1;
+}
+
+.theme-toggle-btn:active {
+    transform: translateY(0);
+}
+
+/* 🌈 Toggle Track - Rainbow on hover */
+.theme-toggle-track {
+    width: 48px;
+    height: 26px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-radius: 50px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover .theme-toggle-track {
+    background: linear-gradient(135deg, rgba(41, 121, 255, 0.2) 0%, rgba(139, 92, 246, 0.2) 50%, rgba(236, 72, 153, 0.15) 100%);
+}
+
+/* Toggle Thumb */
+.theme-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #2979FF 0%, #8B5CF6 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ☀️ Light mode thumb - warm rainbow */
+.theme-toggle-thumb.light {
+    left: 2px;
+    background: linear-gradient(135deg, #FFB800 0%, #FF6F2C 100%);
+    box-shadow: 0 2px 8px rgba(255, 184, 0, 0.3);
+}
+
+/* 🌙 Dark mode thumb - cool rainbow */
+.theme-toggle-thumb.dark {
+    left: 24px;
+    background: linear-gradient(135deg, #2979FF 0%, #5C4FFF 50%, #8B5CF6 100%);
+    box-shadow: 0 2px 8px rgba(92, 79, 255, 0.3);
+}
+
+.theme-icon {
+    color: #ffffff;
+    animation: iconSpin 0.5s ease;
+}
+
+@keyframes iconSpin {
+    0% {
+        transform: rotate(-180deg) scale(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: rotate(0deg) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Toggle Label */
+.theme-toggle-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+    min-width: 40px;
+}
+
+/* Dark Mode Styles */
+.dark .theme-toggle-btn {
+    background: linear-gradient(145deg, rgba(51, 65, 85, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+    border-color: rgba(41, 121, 255, 0.25);
+}
+
+.dark .theme-toggle-btn::before {
+    background: linear-gradient(135deg, rgba(41, 121, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.1) 100%);
+}
+
+.dark .theme-toggle-track {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.dark .theme-toggle-btn:hover .theme-toggle-track {
+    background: linear-gradient(135deg, rgba(41, 121, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.1) 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .theme-toggle-label {
+        display: none;
+    }
+
+    .theme-toggle-btn {
+        padding: 0.5rem;
+    }
+}

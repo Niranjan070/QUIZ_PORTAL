@@ -7,7 +7,7 @@ import {
 import './Sidebar.css';
 
 const Sidebar = ({ role }) => {
-    const { user, logout } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -23,6 +23,8 @@ const Sidebar = ({ role }) => {
 
     const facultyLinks = [
         { to: '/faculty', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/faculty/courses', icon: BookOpen, label: 'Courses' },
+        { to: '/faculty/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/faculty/questions', icon: FileQuestion, label: 'Question Bank' },
         { to: '/faculty/quizzes', icon: ClipboardList, label: 'Manage Quizzes' },
     ];
@@ -31,6 +33,7 @@ const Sidebar = ({ role }) => {
         { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/admin/users', icon: Users, label: 'User Management' },
         { to: '/admin/courses', icon: BookOpen, label: 'Courses' },
+        { to: '/admin/analytics', icon: BarChart3, label: 'Performance' },
     ];
 
     const links = role === 'admin' ? adminLinks : role === 'faculty' ? facultyLinks : studentLinks;
@@ -41,16 +44,6 @@ const Sidebar = ({ role }) => {
                 <div className="logo">
                     <GraduationCap size={32} className="logo-icon" />
                     <span className="logo-text">QuizPortal</span>
-                </div>
-            </div>
-
-            <div className="user-info">
-                <div className="user-avatar">
-                    {user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="user-details">
-                    <span className="user-name">{user?.name}</span>
-                    <span className="user-role">{user?.role}</span>
                 </div>
             </div>
 

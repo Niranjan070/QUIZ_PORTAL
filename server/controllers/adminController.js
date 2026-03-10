@@ -19,12 +19,19 @@ const getDashboard = async (req, res) => {
              LEFT JOIN users u ON al.user_id = u.id ORDER BY al.created_at DESC LIMIT 20`
         );
 
+        const deptStats = await query(`SELECT department_name, COUNT(*) as count FROM users WHERE role = 'student' AND department_name IS NOT NULL GROUP BY department_name`);
+        const levelStats = await query(`SELECT level, COUNT(*) as count FROM users WHERE role = 'student' AND level IS NOT NULL GROUP BY level`);
+        const streamStats = await query(`SELECT stream, COUNT(*) as count FROM users WHERE role = 'student' AND stream IS NOT NULL GROUP BY stream`);
+
         const systemStats = {
             totalUsers: totalUsers[0].count,
             totalCourses: totalCourses[0].count,
             totalQuizzes: totalQuizzes[0].count,
             totalAttempts: totalAttempts[0].count,
-            usersByRole: userStats.reduce((acc, curr) => { acc[curr.role] = curr.count; return acc; }, {})
+            usersByRole: userStats.reduce((acc, curr) => { acc[curr.role] = curr.count; return acc; }, {}),
+            byDepartment: deptStats.reduce((acc, curr) => { acc[curr.department_name] = curr.count; return acc; }, {}),
+            byLevel: levelStats.reduce((acc, curr) => { acc[curr.level] = curr.count; return acc; }, {}),
+            byStream: streamStats.reduce((acc, curr) => { acc[curr.stream] = curr.count; return acc; }, {})
         };
 
         res.json({ success: true, data: { systemStats, recentUsers, recentActivity } });
@@ -36,12 +43,18 @@ const getDashboard = async (req, res) => {
 // @desc    Get all users
 const getUsers = async (req, res) => {
     try {
-        const { role, search } = req.query;
-        let sql = `SELECT id, name, email, role, is_active, created_at FROM users WHERE 1=1`;
+        const { role, search, stream, level, department, designation, year } = req.query;
+        let sql = `SELECT id, name, email, role, is_active, created_at, stream, level, department_name, designation, year FROM users WHERE 1=1`;
         const params = [];
 
         if (role) { sql += ' AND role = ?'; params.push(role); }
+        if (stream) { sql += ' AND stream = ?'; params.push(stream); }
+        if (level) { sql += ' AND level = ?'; params.push(level); }
+        if (department) { sql += ' AND department_name = ?'; params.push(department); }
+        if (designation) { sql += ' AND designation = ?'; params.push(designation); }
+        if (year) { sql += ' AND year = ?'; params.push(year); }
         if (search) { sql += ' AND (name LIKE ? OR email LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
+
         sql += ' ORDER BY created_at DESC';
 
         const users = await query(sql, params);
@@ -54,9 +67,13 @@ const getUsers = async (req, res) => {
 // @desc    Create user
 const createUser = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, stream, level, department_name, designation, year } = req.body;
         if (!name || !email || !password || !role) {
             return res.status(400).json({ success: false, message: 'All fields required.' });
+        }
+
+        if (!email.toLowerCase().endsWith('@vcw.ac.in')) {
+            return res.status(400).json({ success: false, message: 'Only @vcw.ac.in emails are accepted.' });
         }
 
         const existing = await query('SELECT id FROM users WHERE email = ?', [email]);
@@ -66,8 +83,8 @@ const createUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await query(
-            'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-            [name, email, hashedPassword, role]
+            'INSERT INTO users (name, email, password, role, stream, level, department_name, designation, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [name, email, hashedPassword, role, stream || null, level || null, department_name || null, designation || null, year || null]
         );
 
         res.status(201).json({ success: true, message: 'User created!', data: { userId: result.insertId } });
@@ -80,10 +97,14 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, role, isActive } = req.body;
+        const { name, email, role, isActive, stream, level, department_name, designation, year } = req.body;
 
-        await query('UPDATE users SET name = ?, email = ?, role = ?, is_active = ? WHERE id = ?',
-            [name, email, role, isActive, id]);
+        if (email && !email.toLowerCase().endsWith('@vcw.ac.in')) {
+            return res.status(400).json({ success: false, message: 'Only @vcw.ac.in emails are accepted.' });
+        }
+
+        await query('UPDATE users SET name = ?, email = ?, role = ?, is_active = ?, stream = ?, level = ?, department_name = ?, designation = ?, year = ? WHERE id = ?',
+            [name, email, role, isActive, stream || null, level || null, department_name || null, designation || null, year || null, id]);
 
         res.json({ success: true, message: 'User updated!' });
     } catch (error) {
@@ -113,6 +134,57 @@ const resetPassword = async (req, res) => {
         res.json({ success: true, message: 'Password reset!' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error resetting password.' });
+    }
+};
+
+// @desc    Bulk import users
+const bulkImportUsers = async (req, res) => {
+    try {
+        const { users } = req.body;
+        if (!users || !Array.isArray(users)) {
+            return res.status(400).json({ success: false, message: 'Invalid data format.' });
+        }
+
+        const results = {
+            success: 0,
+            failed: 0,
+            errors: []
+        };
+
+        for (const userData of users) {
+            try {
+                const { name, email, password, role, stream, level, department_name, designation, year } = userData;
+
+                if (!name || !email || !password || !role) {
+                    throw new Error(`Missing required fields for ${email || 'unknown'}`);
+                }
+
+                if (!email.toLowerCase().endsWith('@vcw.ac.in')) {
+                    throw new Error(`Invalid domain for ${email}`);
+                }
+
+                const hash = await bcrypt.hash(password.toString(), 10);
+
+                await query(
+                    'INSERT IGNORE INTO users (name, email, password, role, stream, level, department_name, designation, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [name, email, hash, role, stream || null, level || null, department_name || null, designation || null, year || null]
+                );
+
+                results.success++;
+            } catch (err) {
+                results.failed++;
+                results.errors.push(err.message);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Import completed: ${results.success} succeeded, ${results.failed} failed.`,
+            data: results
+        });
+    } catch (error) {
+        console.error('Bulk import error:', error);
+        res.status(500).json({ success: false, message: 'Error during bulk import.' });
     }
 };
 
@@ -202,7 +274,28 @@ const getAnalytics = async (req, res) => {
              GROUP BY c.id, c.name`
         );
 
-        res.json({ success: true, data: { quizzesByMonth, attemptsByMonth, avgScores } });
+        const perfByDept = await query(
+            `SELECT u.department_name, ROUND(AVG((qa.score / qa.total_marks) * 100), 1) as avg_score 
+             FROM quiz_attempts qa JOIN users u ON qa.student_id = u.id 
+             WHERE qa.total_marks > 0 AND u.role = 'student' AND u.department_name IS NOT NULL 
+             GROUP BY u.department_name`
+        );
+
+        const perfByLevel = await query(
+            `SELECT u.level, ROUND(AVG((qa.score / qa.total_marks) * 100), 1) as avg_score 
+             FROM quiz_attempts qa JOIN users u ON qa.student_id = u.id 
+             WHERE qa.total_marks > 0 AND u.role = 'student' AND u.level IS NOT NULL 
+             GROUP BY u.level`
+        );
+
+        const perfByStream = await query(
+            `SELECT u.stream, ROUND(AVG((qa.score / qa.total_marks) * 100), 1) as avg_score 
+             FROM quiz_attempts qa JOIN users u ON qa.student_id = u.id 
+             WHERE qa.total_marks > 0 AND u.role = 'student' AND u.stream IS NOT NULL 
+             GROUP BY u.stream`
+        );
+
+        res.json({ success: true, data: { quizzesByMonth, attemptsByMonth, avgScores, perfByDept, perfByLevel, perfByStream } });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching analytics.' });
     }
@@ -223,6 +316,7 @@ const getAuditLogs = async (req, res) => {
 
 module.exports = {
     getDashboard, getUsers, createUser, updateUser, deleteUser, resetPassword,
+    bulkImportUsers,
     getCourses, createCourse, updateCourse, deleteCourse, enrollStudent,
     getAnalytics, getAuditLogs
 };

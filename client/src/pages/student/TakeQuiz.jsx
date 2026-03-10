@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { Clock, Flag, ChevronLeft, ChevronRight, Send, AlertTriangle } from 'lucide-react';
+import { Clock, Flag, ChevronLeft, ChevronRight, Send, AlertTriangle, CheckCircle2, ArrowRight, BarChart3, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './TakeQuiz.css';
 
@@ -16,6 +16,9 @@ const TakeQuiz = () => {
     const [timeLeft, setTimeLeft] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [submissionResult, setSubmissionResult] = useState(null);
+    const warningsShown = useRef({ fiveMin: false, oneMin: false });
 
     useEffect(() => {
         startQuiz();
@@ -23,6 +26,42 @@ const TakeQuiz = () => {
 
     useEffect(() => {
         if (timeLeft <= 0) return;
+
+        // Fire one-shot warning alerts
+        if (timeLeft <= 300 && !warningsShown.current.fiveMin) {
+            warningsShown.current.fiveMin = true;
+            toast('⚠️ Only 5 minutes remaining!', {
+                duration: 6000,
+                icon: '⚠️',
+                style: {
+                    background: '#ef4444',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    borderRadius: '12px',
+                    padding: '14px 20px',
+                    boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.4)'
+                }
+            });
+        }
+
+        if (timeLeft <= 60 && !warningsShown.current.oneMin) {
+            warningsShown.current.oneMin = true;
+            toast('🚨 Only 1 minute remaining! Submit now!', {
+                duration: 8000,
+                icon: '🚨',
+                style: {
+                    background: '#991b1b',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '1.1rem',
+                    borderRadius: '12px',
+                    padding: '16px 24px',
+                    boxShadow: '0 0 30px rgba(153, 27, 27, 0.8)',
+                    border: '2px solid #fff'
+                }
+            });
+        }
 
         const timer = setInterval(() => {
             setTimeLeft(prev => {
@@ -113,17 +152,14 @@ const TakeQuiz = () => {
             const response = await api.post(`/student/attempts/${quizData.attemptId}/submit`);
             const result = response.data.data;
 
-            toast.success(timedOut ? 'Time up! Quiz auto-submitted.' : 'Quiz submitted successfully!');
+            if (timedOut) {
+                toast('⏰ Time up! Your quiz has been auto-submitted.', { icon: '⏰' });
+            }
 
-            // Navigate to results
-            navigate('/student/results', {
-                state: {
-                    justCompleted: true,
-                    score: result.score,
-                    total: result.totalMarks,
-                    percentage: result.percentage
-                }
-            });
+            // Show the confirmation screen
+            setSubmissionResult(result);
+            setSubmitted(true);
+            setShowConfirm(false);
         } catch (error) {
             toast.error('Failed to submit quiz');
             setSubmitting(false);
@@ -145,10 +181,80 @@ const TakeQuiz = () => {
         );
     }
 
+    // Show submission confirmation screen
+    if (submitted && submissionResult) {
+        const isPassed = submissionResult.percentage >= 40;
+        return (
+            <div className="take-quiz-page">
+                <div className="submission-confirmation">
+                    <div className="submission-icon-wrapper">
+                        <CheckCircle2 size={64} className="submission-check-icon" />
+                    </div>
+                    <h1 className="submission-title">Your Quiz Has Been Recorded Successfully!</h1>
+                    <p className="submission-subtitle">Thank you for completing the quiz. Your responses have been saved.</p>
+
+                    <div className="submission-score-card">
+                        <div className="submission-score-item">
+                            <span className="submission-score-label">Score</span>
+                            <span className="submission-score-value">{submissionResult.score} / {submissionResult.totalMarks}</span>
+                        </div>
+                        <div className="submission-divider"></div>
+                        <div className="submission-score-item">
+                            <span className="submission-score-label">Percentage</span>
+                            <span className={`submission-score-value ${isPassed ? 'score-pass' : 'score-fail'}`}>
+                                {submissionResult.percentage}%
+                            </span>
+                        </div>
+                        <div className="submission-divider"></div>
+                        <div className="submission-score-item">
+                            <span className="submission-score-label">Status</span>
+                            <span className={`submission-status-badge ${isPassed ? 'passed' : 'failed'}`}>
+                                {isPassed ? '✅ Passed' : '❌ Failed'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {submissionResult.showResults ? (
+                        <p className="submission-answer-key-note">
+                            📝 The answer key is available for this quiz. You can review your answers in the results page.
+                        </p>
+                    ) : (
+                        <p className="submission-answer-key-note muted">
+                            🔒 The answer key is not available for this quiz.
+                        </p>
+                    )}
+
+                    <div className="submission-actions">
+                        <button
+                            className="btn btn-primary btn-lg"
+                            onClick={() => navigate('/student/results', {
+                                state: {
+                                    justCompleted: true,
+                                    score: submissionResult.score,
+                                    total: submissionResult.totalMarks,
+                                    percentage: submissionResult.percentage
+                                }
+                            })}
+                        >
+                            <BarChart3 size={20} /> View Results
+                        </button>
+                        <button
+                            className="btn btn-secondary btn-lg"
+                            onClick={() => navigate('/student/quizzes')}
+                        >
+                            Back to Quizzes <ArrowRight size={20} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const { quiz, questions } = quizData;
     const question = questions[currentQuestion];
     const answeredCount = Object.keys(answers).filter(k => answers[k]).length;
-    const isLowTime = timeLeft <= 60;
+    const isLowTime = timeLeft <= 300 && timeLeft > 60;    // 5 min warning zone
+    const isVeryLowTime = timeLeft <= 60;                   // 1 min critical zone
 
     return (
         <div className="take-quiz-page">
@@ -159,11 +265,25 @@ const TakeQuiz = () => {
                     <span className="quiz-course-badge">{quiz.course_name}</span>
                 </div>
 
-                <div className={`quiz-timer ${isLowTime ? 'warning' : ''}`}>
+                <div className={`quiz-timer ${isVeryLowTime ? 'critical' : isLowTime ? 'warning' : ''}`}>
                     <Clock size={20} />
                     <span>{formatTime(timeLeft)}</span>
                 </div>
             </header>
+
+            {/* Time Warning Banner */}
+            {isVeryLowTime && (
+                <div className="time-warning-banner critical-banner">
+                    <Bell size={18} className="banner-bell" />
+                    <strong>🚨 Less than 1 minute remaining!</strong> Submit your quiz immediately!
+                </div>
+            )}
+            {isLowTime && !isVeryLowTime && (
+                <div className="time-warning-banner warning-banner">
+                    <Bell size={18} />
+                    <strong>⚠️ Only {Math.ceil(timeLeft / 60)} minutes remaining.</strong> Please review and submit soon.
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="quiz-content">

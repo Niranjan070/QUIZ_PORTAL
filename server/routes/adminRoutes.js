@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
     getDashboard, getUsers, createUser, updateUser, deleteUser, resetPassword,
+    bulkImportUsers,
     getCourses, createCourse, updateCourse, deleteCourse, enrollStudent,
     getAnalytics, getAuditLogs
 } = require('../controllers/adminController');
@@ -15,6 +16,7 @@ router.post('/users', createUser);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 router.put('/users/:id/reset-password', resetPassword);
+router.post('/users/bulk-import', bulkImportUsers);
 router.get('/courses', getCourses);
 router.post('/courses', createCourse);
 router.put('/courses/:id', updateCourse);

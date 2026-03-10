@@ -28,7 +28,7 @@ const testConnection = async () => {
     }
 };
 
-// Execute query helper
+// Execute query helper (for prepared statements)
 const query = async (sql, params) => {
     try {
         const [results] = await pool.execute(sql, params);
@@ -39,4 +39,15 @@ const query = async (sql, params) => {
     }
 };
 
-module.exports = { pool, testConnection, query };
+// Execute bulk query helper (for non-prepared statements, like bulk inserts)
+const bulkQuery = async (sql, params) => {
+    try {
+        const [results] = await pool.query(sql, params);
+        return results;
+    } catch (error) {
+        console.error('Bulk query error:', error);
+        throw error;
+    }
+};
+
+module.exports = { pool, testConnection, query, bulkQuery };

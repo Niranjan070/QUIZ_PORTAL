@@ -26,6 +26,14 @@ const register = async (req, res) => {
             });
         }
 
+        // Validate domain
+        if (!email.toLowerCase().endsWith('@vcw.ac.in')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Only college domain IDs (@vcw.ac.in) are accepted.'
+            });
+        }
+
         // Check if user already exists
         const existingUsers = await query(
             'SELECT id FROM users WHERE email = ?',
@@ -146,7 +154,12 @@ const login = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    profile_image: user.profile_image
+                    profile_image: user.profile_image,
+                    department: user.department_name,
+                    designation: user.designation,
+                    level: user.level,
+                    funding_type: user.funding_type,
+                    year: user.year
                 },
                 token
             }
@@ -166,7 +179,8 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         const users = await query(
-            `SELECT id, name, email, role, profile_image, is_active, created_at 
+            `SELECT id, name, email, role, profile_image, is_active, created_at,
+                    department_name as department, designation, level, funding_type, year
              FROM users WHERE id = ?`,
             [req.user.id]
         );

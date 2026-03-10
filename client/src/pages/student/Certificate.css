@@ -1,0 +1,265 @@
+.certificate-page {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f1f5f9;
+    min-height: 100vh;
+    overflow-x: auto; /* Allow horizontal scroll if needed */
+}
+
+.certificate-container {
+    width: 1000px;
+    min-height: 750px;
+    background: white;
+    position: relative;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+    display: flex;
+    color: #1a1a1a;
+    margin: 2rem 0;
+    transform-origin: top center;
+}
+
+/* Ensure the certificate fits on smaller screens */
+@media (max-width: 1050px) {
+    .certificate-container {
+        transform: scale(0.85);
+    }
+}
+
+@media (max-width: 900px) {
+    .certificate-container {
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 768px) {
+    .certificate-container {
+        transform: scale(0.55);
+    }
+}
+
+/* Red & Gold Decorative Left Side */
+.certificate-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 350px;
+    height: 100%;
+    z-index: 1;
+}
+
+.stripe-red-large {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100%;
+    background: #b91c1c; /* Dark red */
+    clip-path: polygon(0 0, 100% 0, 40% 100%, 0% 100%);
+}
+
+.stripe-gold-thin {
+    position: absolute;
+    top: 0;
+    left: 180px;
+    width: 40px;
+    height: 100%;
+    background: linear-gradient(to bottom, #d4af37, #f1c40f, #d4af37);
+    clip-path: polygon(40% 0, 100% 0, 60% 100%, 0 100%);
+}
+
+.stripe-red-thin {
+    position: absolute;
+    top: 0;
+    left: 215px;
+    width: 60px;
+    height: 100%;
+    background: #991b1b;
+    clip-path: polygon(40% 0, 100% 0, 60% 100%, 0 100%);
+}
+
+/* Main Content Area */
+.certificate-content {
+    flex: 1;
+    margin-left: 220px; /* Offset for stripes */
+    padding: 60px 80px 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.college-branding {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.college-logo-small {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.college-name-top {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #b91c1c;
+    margin: 0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.cert-title-wrapper {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.cert-title {
+    font-family: 'Cinzel', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    margin: 0;
+    background: linear-gradient(to bottom, #d4af37 20%, #8c6a1b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 4px;
+}
+
+.cert-subtitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.cert-subtitle::before,
+.cert-subtitle::after {
+    content: "";
+    height: 1px;
+    width: 100px;
+    background: #d1d5db;
+}
+
+.cert-presentation {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #374151;
+    margin: 2.5rem 0 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.student-name-script {
+    font-family: 'Great Vibes', cursive;
+    font-size: 4.5rem;
+    color: #111827;
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1.5px solid #1a1a1a;
+    width: 80%;
+}
+
+.student-rank-badge {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 50px;
+    color: #92400e;
+    font-weight: 800;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+}
+
+.rank-icon {
+    color: #d97706;
+}
+
+.cert-body-text {
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin: 2rem 0;
+    line-height: 1.8;
+    max-width: 600px;
+    font-style: italic;
+}
+
+/* Footer & Signatures */
+.certificate-footer-new {
+    width: 100%;
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 40px 50px; /* Added top and more bottom padding */
+}
+
+.signature-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+}
+
+.signature-line-new {
+    width: 100%;
+    height: 1.5px;
+    background: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.signature-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.date-text {
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+}
+
+/* Utilities */
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.flex { display: flex; }
+.justify-between { justify-content: space-between; }
+.items-center { align-items: center; }
+.gap-2 { gap: 0.5rem; }
+
+/* Print Styles */
+@media print {
+    .certificate-page {
+        padding: 0;
+        background: white;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .certificate-container {
+        box-shadow: none;
+        width: 1122px; /* standard A4 landscape */
+        height: 794px;
+    }
+}

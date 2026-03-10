@@ -1,0 +1,132 @@
+/* ========================================
+   Viewport-Optimized Dashboard Layout
+   Layout-only rules (no component styling)
+   ======================================== */
+
+/* Main Container - Full Viewport */
+.dashboard-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Dashboard Content Area */
+.dashboard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.25rem;
+    gap: 1rem;
+}
+
+/* Calendar Card - Full Width */
+.calendar-card {
+    grid-column: 1 / -1;
+    min-height: auto;
+    max-height: none;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+/* Scrollbar Styling */
+.card-body::-webkit-scrollbar,
+.calendar-card::-webkit-scrollbar {
+    width: 4px;
+}
+
+.card-body::-webkit-scrollbar-track,
+.calendar-card::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.card-body::-webkit-scrollbar-thumb,
+.calendar-card::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(41, 121, 255, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+    border-radius: 4px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover,
+.calendar-card::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(41, 121, 255, 0.6) 0%, rgba(139, 92, 246, 0.6) 100%);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-content {
+        padding: 0.75rem;
+    }
+}
+
+/* Quick Actions Compact */
+.quick-actions {
+    margin-bottom: 0;
+}
+
+.quick-actions h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(41, 121, 255, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(41, 121, 255, 0.35) 0%, rgba(139, 92, 246, 0.35) 100%);
+}
+
+/* Animations */
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.4s ease forwards;
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 900px) {
+    .dashboard-container {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+}
+
+/* 🌈 Rainbow glow shadow */
+.shadow-glow-sm {
+    box-shadow: 0 0 12px rgba(41, 121, 255, 0.15), 0 0 24px rgba(139, 92, 246, 0.1), 0 0 36px rgba(236, 72, 153, 0.05);
+}

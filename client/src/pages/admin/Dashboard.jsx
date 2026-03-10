@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
 import api from '../../services/api';
-import { Users, BookOpen, ClipboardList, Activity, TrendingUp, Shield } from 'lucide-react';
+import { Users, BookOpen, ClipboardList, Activity, TrendingUp, Shield, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+import '../../styles/dashboard.css';
+import '../../styles/viewport-dashboard.css';
 import '../student/Dashboard.css';
 import './Admin.css';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const AdminDashboard = () => {
     const [data, setData] = useState(null);
@@ -27,22 +32,15 @@ const AdminDashboard = () => {
 
     if (loading) {
         return (
-            <div className="page-container">
-                <Sidebar role="admin" />
-                <main className="main-content">
-                    <div className="loading-container"><div className="spinner"></div></div>
-                </main>
-            </div>
+            <div className="loading-container"><div className="spinner"></div></div>
         );
     }
 
     const { systemStats, recentUsers } = data || {};
 
     return (
-        <div className="page-container">
-            <Sidebar role="admin" />
-
-            <main className="main-content">
+        <div className="dashboard-container">
+            <div className="dashboard-content">
                 <div className="page-header">
                     <div>
                         <h1 className="page-title">Admin Dashboard</h1>
@@ -53,24 +51,32 @@ const AdminDashboard = () => {
                 {/* Stats */}
                 <div className="grid grid-4 mb-3">
                     <div className="stat-card">
-                        <div className="stat-icon primary"><Users size={24} /></div>
-                        <div className="stat-value">{systemStats?.totalUsers || 0}</div>
-                        <div className="stat-label">Total Users</div>
+                        <div className="stat-card-content">
+                            <div className="stat-icon primary"><Users size={28} /></div>
+                            <div className="stat-value">{systemStats?.totalUsers || 0}</div>
+                            <div className="stat-label">Total Users</div>
+                        </div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-icon success"><BookOpen size={24} /></div>
-                        <div className="stat-value">{systemStats?.totalCourses || 0}</div>
-                        <div className="stat-label">Courses</div>
+                        <div className="stat-card-content">
+                            <div className="stat-icon success"><BookOpen size={28} /></div>
+                            <div className="stat-value">{systemStats?.totalCourses || 0}</div>
+                            <div className="stat-label">Courses</div>
+                        </div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-icon warning"><ClipboardList size={24} /></div>
-                        <div className="stat-value">{systemStats?.totalQuizzes || 0}</div>
-                        <div className="stat-label">Quizzes</div>
+                        <div className="stat-card-content">
+                            <div className="stat-icon warning"><ClipboardList size={28} /></div>
+                            <div className="stat-value">{systemStats?.totalQuizzes || 0}</div>
+                            <div className="stat-label">Quizzes</div>
+                        </div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-icon secondary"><Activity size={24} /></div>
-                        <div className="stat-value">{systemStats?.totalAttempts || 0}</div>
-                        <div className="stat-label">Quiz Attempts</div>
+                        <div className="stat-card-content">
+                            <div className="stat-icon secondary"><Activity size={28} /></div>
+                            <div className="stat-value">{systemStats?.totalAttempts || 0}</div>
+                            <div className="stat-label">Quiz Attempts</div>
+                        </div>
                     </div>
                 </div>
 
@@ -99,6 +105,72 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
+                {/* Visual Analytics */}
+                <div className="grid grid-3 mb-3">
+                    <div className="card">
+                        <div className="card-header pb-1">
+                            <h3 className="card-title flex items-center gap-1">
+                                <PieChartIcon size={18} /> Department Wise
+                            </h3>
+                        </div>
+                        <div style={{ height: '200px', display: 'flex', justifyContent: 'center' }}>
+                            <Doughnut
+                                data={{
+                                    labels: Object.keys(systemStats?.byDepartment || {}),
+                                    datasets: [{
+                                        data: Object.values(systemStats?.byDepartment || {}),
+                                        backgroundColor: ['#6366f1', '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
+                                        borderWidth: 0
+                                    }]
+                                }}
+                                options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, color: '#94a3b8' } } } }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header pb-1">
+                            <h3 className="card-title flex items-center gap-1">
+                                <Activity size={18} /> Level (UG/PG)
+                            </h3>
+                        </div>
+                        <div style={{ height: '200px', display: 'flex', justifyContent: 'center' }}>
+                            <Doughnut
+                                data={{
+                                    labels: Object.keys(systemStats?.byLevel || {}),
+                                    datasets: [{
+                                        data: Object.values(systemStats?.byLevel || {}),
+                                        backgroundColor: ['#4f46e5', '#10b981'],
+                                        borderWidth: 0
+                                    }]
+                                }}
+                                options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, color: '#94a3b8' } } } }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header pb-1">
+                            <h3 className="card-title flex items-center gap-1">
+                                <TrendingUp size={18} /> Stream (Aided/SF)
+                            </h3>
+                        </div>
+                        <div style={{ height: '200px', display: 'flex', justifyContent: 'center' }}>
+                            <Doughnut
+                                data={{
+                                    labels: Object.keys(systemStats?.byStream || {}),
+                                    datasets: [{
+                                        data: Object.values(systemStats?.byStream || {}),
+                                        backgroundColor: ['#8b5cf6', '#06b6d4'],
+                                        borderWidth: 0
+                                    }]
+                                }}
+                                options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, color: '#94a3b8' } } } }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 {/* Quick Access & Recent Users */}
                 <div className="dashboard-grid">
                     <div className="card dashboard-card">
@@ -113,6 +185,10 @@ const AdminDashboard = () => {
                             <Link to="/admin/courses" className="quick-link">
                                 <BookOpen size={20} />
                                 <span>Manage Courses</span>
+                            </Link>
+                            <Link to="/admin/analytics" className="quick-link">
+                                <BarChart3 size={20} />
+                                <span>Performance Report</span>
                             </Link>
                         </div>
                     </div>
@@ -133,7 +209,7 @@ const AdminDashboard = () => {
                                         <p>{user.email}</p>
                                     </div>
                                     <span className={`badge badge-${user.role === 'admin' ? 'danger' :
-                                            user.role === 'faculty' ? 'primary' : 'success'
+                                        user.role === 'faculty' ? 'primary' : 'success'
                                         }`}>{user.role}</span>
                                 </div>
                             )) : (
@@ -144,7 +220,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };

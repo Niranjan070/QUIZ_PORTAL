@@ -1,0 +1,231 @@
+.quiz-calendar {
+    /* Background handled by parent container */
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    width: 100%;
+    max-width: 100%;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.calendar-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+    background: none;
+    -webkit-text-fill-color: initial;
+}
+
+.calendar-nav-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.calendar-nav-btn:hover {
+    background: rgba(41, 121, 255, 0.08);
+    color: var(--blue-500);
+    border-color: rgba(41, 121, 255, 0.2);
+    transform: none;
+    box-shadow: none;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+    /* Reduced gap */
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calendar-day {
+    /* aspect-ratio: 1; removed to prevent excessive height on wide screens */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* Align to top */
+    padding: 0.25rem;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    position: relative;
+    cursor: default;
+    transition: all 0.2s ease;
+    min-height: 40px;
+    /* Reduced to fit better */
+    height: auto;
+    color: var(--text-primary);
+}
+
+.calendar-day.empty {
+    background: transparent;
+    border: none;
+}
+
+.calendar-day:hover:not(.empty) {
+    background: rgba(41, 121, 255, 0.05);
+    color: var(--blue-500);
+}
+
+/* 🌈 Rainbow today marker */
+.calendar-day.today {
+    background: linear-gradient(135deg, rgba(41, 121, 255, 0.1) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(236, 72, 153, 0.08) 100%);
+    color: var(--blue-600);
+    border: 1px solid rgba(41, 121, 255, 0.25);
+    box-shadow: 0 2px 8px rgba(41, 121, 255, 0.1);
+    font-weight: 700;
+}
+
+.calendar-day.today .day-number {
+    color: var(--blue-600);
+    font-weight: 700;
+}
+
+.calendar-day.has-quiz {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.calendar-day.has-quiz:hover {
+    background: rgba(41, 121, 255, 0.08);
+    border-color: rgba(139, 92, 246, 0.25);
+}
+
+.day-number {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: inherit;
+    margin-bottom: 0.25rem;
+    line-height: 1;
+}
+
+.quiz-indicators {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.quiz-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.more-quizzes {
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Tooltip */
+.quiz-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    min-width: 260px;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.tooltip-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tooltip-quiz {
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.tooltip-quiz:hover {
+    background: rgba(41, 121, 255, 0.06);
+    border-color: rgba(41, 121, 255, 0.2);
+}
+
+.tooltip-quiz-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.tooltip-quiz-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tooltip-quiz-time {
+    font-size: 0.75rem;
+    color: var(--blue-500);
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .calendar-grid {
+        gap: 0.25rem;
+    }
+}

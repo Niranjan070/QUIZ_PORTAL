@@ -5,7 +5,7 @@ const { query } = require('../config/database');
 // @access  Private (Student)
 const getDashboard = async (req, res) => {
     try {
-        const studentId = req.user.id;
+        const { id: studentId, department_name, level, stream, year } = req.user;
 
         // Get enrolled courses count
         const coursesResult = await query(
@@ -26,9 +26,13 @@ const getDashboard = async (req, res) => {
              AND q.is_published = TRUE
              AND q.start_time <= NOW()
              AND q.end_time >= NOW()
+             AND (q.target_department IS NULL OR q.target_department = ?)
+             AND (q.target_level IS NULL OR q.target_level = ?)
+             AND (q.target_stream IS NULL OR q.target_stream = ?)
+             AND (q.target_year IS NULL OR q.target_year = ?)
              ORDER BY q.end_time ASC
              LIMIT 10`,
-            [studentId, studentId]
+            [studentId, studentId, department_name, level, stream, year]
         );
 
         // Get upcoming quizzes
@@ -41,9 +45,13 @@ const getDashboard = async (req, res) => {
              WHERE e.student_id = ? 
              AND q.is_published = TRUE
              AND q.start_time > NOW()
+             AND (q.target_department IS NULL OR q.target_department = ?)
+             AND (q.target_level IS NULL OR q.target_level = ?)
+             AND (q.target_stream IS NULL OR q.target_stream = ?)
+             AND (q.target_year IS NULL OR q.target_year = ?)
              ORDER BY q.start_time ASC
              LIMIT 5`,
-            [studentId]
+            [studentId, department_name, level, stream, year]
         );
 
         // Get recent results
@@ -162,30 +170,56 @@ const getQuizzes = async (req, res) => {
 
         let whereClause = '';
         if (status === 'active') {
-            whereClause = 'AND q.start_time <= NOW() AND q.end_time >= NOW()';
+            whereClause += ' AND q.start_time <= NOW() AND q.end_time >= NOW() AND saq.quiz_id IS NULL';
         } else if (status === 'upcoming') {
-            whereClause = 'AND q.start_time > NOW()';
+            whereClause += ' AND q.start_time > NOW() AND saq.quiz_id IS NULL';
         } else if (status === 'past') {
-            whereClause = 'AND q.end_time < NOW()';
+            whereClause += ' AND q.end_time < NOW() AND saq.quiz_id IS NULL';
+        } else if (status === 'achieved') {
+            whereClause = ' AND saq.quiz_id IS NOT NULL';
         }
 
         const quizzes = await query(
             `SELECT q.*, c.name as course_name, c.code as course_code,
                     u.name as created_by_name,
                     (SELECT COUNT(*) FROM quiz_attempts WHERE quiz_id = q.id AND student_id = ?) as attempts_made,
-                    (SELECT MAX(score) FROM quiz_attempts WHERE quiz_id = q.id AND student_id = ? AND status = 'completed') as best_score
+                    (SELECT MAX(score) FROM quiz_attempts WHERE quiz_id = q.id AND student_id = ? AND status = 'completed') as best_score,
+                    (SELECT ROUND(AVG((qa.score / qa.total_marks) * 100), 1) 
+                     FROM quiz_attempts qa 
+                     JOIN quizzes qz ON qa.quiz_id = qz.id 
+                     WHERE qa.student_id = ? AND qz.course_id = c.id AND qa.status = 'completed') as student_course_avg,
+                    IF(saq.quiz_id IS NOT NULL, 1, 0) as is_student_archived
              FROM quizzes q
              JOIN courses c ON q.course_id = c.id
              JOIN enrollments e ON e.course_id = c.id
+             JOIN users s ON e.student_id = s.id
              LEFT JOIN users u ON q.created_by = u.id
-             WHERE e.student_id = ? AND q.is_published = TRUE ${whereClause}
+             LEFT JOIN student_archived_quizzes saq ON saq.quiz_id = q.id AND saq.student_id = ?
+             WHERE e.student_id = ? AND q.is_published = TRUE 
+             AND (q.target_department IS NULL OR q.target_department = s.department_name)
+             AND (q.target_level IS NULL OR q.target_level = s.level)
+             AND (q.target_stream IS NULL OR q.target_stream = s.stream)
+             AND (q.target_year IS NULL OR q.target_year = s.year)
+             ${whereClause}
              ORDER BY q.start_time DESC`,
-            [studentId, studentId, studentId]
+            [studentId, studentId, studentId, studentId, studentId]
         );
+
+        // Client-side filter for score range since it depends on a subquery
+        const filteredQuizzes = quizzes.filter(q => {
+            const avg = q.student_course_avg || 0;
+            const minReq = q.min_percentage_required || 0;
+            const maxReq = q.max_percentage_required !== null && q.max_percentage_required !== undefined
+                ? q.max_percentage_required
+                : 100;
+            // If both are defaults (0 and 100), allow all
+            if (minReq === 0 && maxReq === 100) return true;
+            return avg >= minReq && avg <= maxReq;
+        });
 
         res.json({
             success: true,
-            data: { quizzes }
+            data: { quizzes: filteredQuizzes }
         });
     } catch (error) {
         console.error('Get quizzes error:', error);
@@ -248,6 +282,37 @@ const startQuiz = async (req, res) => {
                 success: false,
                 message: 'You are not enrolled in this course.'
             });
+        }
+
+        // Check score range eligibility
+        if (quiz.min_percentage_required > 0 || (quiz.max_percentage_required !== null && quiz.max_percentage_required < 100)) {
+            const studentAvg = await query(
+                `SELECT ROUND(AVG((qa.score / qa.total_marks) * 100), 1) as avg_score
+                 FROM quiz_attempts qa
+                 WHERE qa.student_id = ? AND qa.quiz_id IN (
+                     SELECT id FROM quizzes WHERE course_id = ?
+                 ) AND qa.status = 'completed' AND qa.total_marks > 0`,
+                [studentId, quiz.course_id]
+            );
+
+            const avg = studentAvg[0].avg_score || 0;
+            const minReq = quiz.min_percentage_required || 0;
+            const maxReq = quiz.max_percentage_required !== null && quiz.max_percentage_required !== undefined
+                ? quiz.max_percentage_required
+                : 100;
+
+            if (avg < minReq) {
+                return res.status(403).json({
+                    success: false,
+                    message: `This quiz requires a minimum average score of ${minReq}% in this course. Your current average is ${avg}%.`
+                });
+            }
+            if (avg > maxReq) {
+                return res.status(403).json({
+                    success: false,
+                    message: `This quiz is intended for students with a maximum average score of ${maxReq}% in this course. Your current average is ${avg}%.`
+                });
+            }
         }
 
         // Check attempt limit
@@ -497,12 +562,39 @@ const submitQuiz = async (req, res) => {
             [totalScore, timeSpentSeconds, attemptId]
         );
 
-        // Create notification
+        // Create notification for student
         await query(
-            `INSERT INTO notifications (user_id, title, message, type)
-             VALUES (?, ?, ?, 'grade')`,
-            [studentId, 'Quiz Submitted', `Your quiz has been submitted. Score: ${totalScore}/${attempt.total_marks}`]
+            `INSERT INTO notifications (user_id, title, message, type, link)
+             VALUES (?, ?, ?, 'grade', ?)`,
+            [studentId, 'Quiz Submitted', `Your quiz has been submitted. Score: ${totalScore}/${attempt.total_marks}`, `/student/results/${attemptId}`]
         );
+
+        // Notify faculty
+        try {
+            const quizInfo = await query(
+                `SELECT q.title, c.faculty_id, u.name as student_name 
+                 FROM quizzes q 
+                 JOIN courses c ON q.course_id = c.id 
+                 JOIN users u ON u.id = ?
+                 WHERE q.id = ?`,
+                [studentId, attempt.quiz_id]
+            );
+
+            if (quizInfo.length > 0) {
+                await query(
+                    `INSERT INTO notifications (user_id, title, message, type, link)
+                     VALUES (?, ?, ?, 'info', ?)`,
+                    [
+                        quizInfo[0].faculty_id, 
+                        'New Quiz Submission', 
+                        `${quizInfo[0].student_name} completed the quiz "${quizInfo[0].title}".`,
+                        `/faculty/quizzes/${attempt.quiz_id}/results` // Adjust link as needed
+                    ]
+                );
+            }
+        } catch (facultyNotifError) {
+            console.error('Error notifying faculty:', facultyNotifError);
+        }
 
         res.json({
             success: true,
@@ -609,7 +701,7 @@ const getResultsHistory = async (req, res) => {
     try {
         const results = await query(
             `SELECT qa.id, qa.score, qa.total_marks, qa.status, qa.time_spent_seconds,
-                    qa.submitted_at, q.title as quiz_title, c.name as course_name,
+                    qa.submitted_at, q.title as quiz_title, q.generate_certificate, c.name as course_name,
                     ROUND((qa.score / qa.total_marks) * 100, 1) as percentage
              FROM quiz_attempts qa
              JOIN quizzes q ON qa.quiz_id = q.id
@@ -632,6 +724,115 @@ const getResultsHistory = async (req, res) => {
     }
 };
 
+const toggleQuizArchive = async (req, res) => {
+    try {
+        const { quizId } = req.params;
+        const studentId = req.user.id;
+
+        const existing = await query(
+            'SELECT * FROM student_archived_quizzes WHERE student_id = ? AND quiz_id = ?',
+            [studentId, quizId]
+        );
+
+        let isArchived;
+        if (existing.length > 0) {
+            await query(
+                'DELETE FROM student_archived_quizzes WHERE student_id = ? AND quiz_id = ?',
+                [studentId, quizId]
+            );
+            isArchived = false;
+        } else {
+            await query(
+                'INSERT INTO student_archived_quizzes (student_id, quiz_id) VALUES (?, ?)',
+                [studentId, quizId]
+            );
+            isArchived = true;
+        }
+
+        res.json({
+            success: true,
+            message: `Quiz ${isArchived ? 'archived' : 'unarchived'} successfully`,
+            is_archived: isArchived
+        });
+    } catch (error) {
+        console.error('Student toggle archive error:', error);
+        res.status(500).json({ success: false, message: 'Error toggling archive status' });
+    }
+};
+
+const getCertificateData = async (req, res) => {
+    try {
+        const { attemptId } = req.params;
+        const studentId = req.user.id;
+
+        // Get attempt and quiz details
+        const attempts = await query(
+            `SELECT qa.*, q.title as quiz_title, q.total_marks, q.course_id, q.generate_certificate, c.name as course_name, u.name as student_name
+             FROM quiz_attempts qa
+             JOIN quizzes q ON qa.quiz_id = q.id
+             JOIN courses c ON q.course_id = c.id
+             JOIN users u ON qa.student_id = u.id
+             WHERE qa.id = ? AND qa.student_id = ?`,
+            [attemptId, studentId]
+        );
+
+        if (attempts.length === 0) {
+            return res.status(404).json({ success: false, message: 'Attempt not found.' });
+        }
+
+        const attempt = attempts[0];
+        if (!attempt.generate_certificate) {
+            return res.status(400).json({ success: false, message: 'Certificates are not enabled for this quiz.' });
+        }
+
+        // Get Leaderboard (Top 2)
+        const toppers = await query(
+            `SELECT u.name, MAX(qa.score) as best_score
+             FROM quiz_attempts qa
+             JOIN users u ON qa.student_id = u.id
+             WHERE qa.quiz_id = ? AND qa.status = 'completed'
+             GROUP BY qa.student_id
+             ORDER BY best_score DESC, MIN(qa.time_spent_seconds) ASC
+             LIMIT 2`,
+            [attempt.quiz_id]
+        );
+
+        // Get student's rank
+        const allScores = await query(
+            `SELECT student_id, MAX(score) as best_score
+             FROM quiz_attempts
+             WHERE quiz_id = ? AND status = 'completed'
+             GROUP BY student_id
+             ORDER BY best_score DESC, MIN(time_spent_seconds) ASC`,
+            [attempt.quiz_id]
+        );
+
+        const rank = allScores.findIndex(s => s.student_id === studentId) + 1;
+
+        res.json({
+            success: true,
+            data: {
+                studentName: attempt.student_name,
+                quizTitle: attempt.quiz_title,
+                courseName: attempt.course_name,
+                score: attempt.score,
+                totalMarks: attempt.total_marks,
+                percentage: ((attempt.score / attempt.total_marks) * 100).toFixed(1),
+                rank: rank,
+                toppers: toppers.map((t, i) => ({
+                    place: i + 1,
+                    name: t.name,
+                    score: t.best_score
+                })),
+                date: attempt.submitted_at
+            }
+        });
+    } catch (error) {
+        console.error('Certificate error:', error);
+        res.status(500).json({ success: false, message: 'Error fetching certificate data.' });
+    }
+};
+
 module.exports = {
     getDashboard,
     getCourses,
@@ -640,5 +841,7 @@ module.exports = {
     saveAnswer,
     submitQuiz,
     getResult,
-    getResultsHistory
+    getResultsHistory,
+    getCertificateData,
+    toggleQuizArchive
 };

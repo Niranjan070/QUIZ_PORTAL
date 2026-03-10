@@ -1,0 +1,27 @@
+{
+  "name": "online_quiz_portal",
+  "version": "1.0.0",
+  "description": "A comprehensive web-based quiz management system with role-based dashboards for Students, Faculty, and Administrators.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Niranjan070/online_quiz_portal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Niranjan070/online_quiz_portal/issues"
+  },
+  "homepage": "https://github.com/Niranjan070/online_quiz_portal#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  }
+}
